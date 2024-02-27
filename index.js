@@ -4,7 +4,7 @@
  * @Author: xiaoxin
  * @Date: 2024-02-21 16:23:39
  * @LastEditors: xiaoxin
- * @LastEditTime: 2024-02-27 17:45:45
+ * @LastEditTime: 2024-02-27 18:56:09
  */
 // 导包
 import { WechatyBuilder, ScanStatus, log } from "wechaty"
@@ -18,7 +18,7 @@ function onScan(qrCode,status){
         // 在控制台显示二维码
         qrcodeTerminal.generate(qrCode, { small: true })
         const qrcodeImageUrl = ['https://api.qrserver.com/v1/create-qr-code/?data=', encodeURIComponent(qrCode)].join('')
-        log.error(`二维码地址: ${qrcodeImageUrl}`)
+        console.log(`二维码地址: ${qrcodeImageUrl}`)
       } else {
         log.info(`二维码扫描结果: ${ScanStatus[status]} ${status}`)
       }
