@@ -4,7 +4,7 @@
  * @Author: xiaoxin
  * @Date: 2024-02-27 18:48:36
  * @LastEditors: xiaoxin
- * @LastEditTime: 2024-02-28 10:24:21
+ * @LastEditTime: 2024-02-28 11:02:16
 -->
 <p align="center">
 	<strong>欢迎使用👏🏻wechat-bot-wechat4u</strong>
@@ -73,6 +73,8 @@ wechat-bot-wechat4u，基于`wechat4u`进行开发，接收微信账号消息并
 二维码地址: https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Flogin.weixin.qq.com%2Fl%2FAY5C0WwogA%3D%3D
 ```
 
+![image](https://github.com/labi-xiaoxin/img/blob/main/wechat-private-talk.jpg?raw=true)
+![image](https://github.com/labi-xiaoxin/img/blob/main/wechat-public-room.jpg?raw=true)
 ## 🤝 为项目添砖加瓦
 
 欢迎提出 Contributions, issues 与 feature requests!<br />
