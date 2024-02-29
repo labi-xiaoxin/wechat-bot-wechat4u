@@ -4,67 +4,85 @@ import * as MYCONFIG from "../../config.js"
 import axios from "axios"
 import { WxPushData } from "../../wx-push-data.js"
 
+
+
 /**
  * 处理消息是否需要回复
  * @param message 消息对象
  */
 export async function sendMessage(message) {
-    //消息类型
-    const type = message.type();
-    //是否是自己发送 是：true；否：false
-    const myself = message.self();
-    //是否是房间消息 是：true；否： null
-    const room = message.room();
-    //是否@我
-    const mentionSelf = await message.mentionSelf();
-    // 备注名称
-    const remarkName = await message.talker().alias();
-    // 群名称
-    const roomName = (await room?.topic()) || null;
-    // 消息发送人
-    const talker = message.talker();
+    //1、判断消息是否符合逻辑
+    var checkResult = checkMessage(message);
+    if (!checkResult) {
+        return
+    }
+    //2、发送后端处理消息,并返回发送微信
+    forwardMsg(message);
+}
 
-    //这里只处理文本、私聊在白名单、群聊@机器人并且在白名单 的消息，如需处理其他消息自行修改
-    //只处理文本消息 且不是自己发送的
-    if (type === MessageType.MESSAGE_TYPE_TEXT && myself === false) {
-        //房间内的消息需要@ 且群聊在名单内
-        if ((room != null && mentionSelf == true && MYCONFIG.roomWhiteList.includes(roomName))
-            ||
-            (room == null && MYCONFIG.aliasWhiteList.includes(remarkName))
-        ) {
-            reMsg(message);
-        }
+/**
+ * 判断消息是否符合逻辑
+ * 
+ * @param {Message} message 消息 
+ * @returns 符合逻辑返回true；否则返回false
+ */
+function checkMessage(message) {
+    //消息类型不是文本
+    if (message.type() != MessageType.MESSAGE_TYPE_TEXT) {
+        return false
+    }
+    //自己发送的消息不处理
+    if (message.self()) {
+        return false
+    }
+    //引用的文本不处理
+    const regexp = /「[^」]+」\n- - - - - - - - - - - - - -/;
+    if (regexp.test(message.text())) {
+        return false
+    }
+    //非白名单内的不处理
+    if (isRoomOrPrivate(message) == 0) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * 判断消息是否
+ * 
+ *      是房间消息且@机器人，则返回1
+ *      是私聊且在白名单内，则返回2
+ *      否则返回0
+ * 
+ * @param {Message} message 消息内容
+ */
+async function isRoomOrPrivate(message) {
+    //房间内的消息需要@ 且群聊在名单内
+    if (message.room() != null && await message.mentionSelf() == true && MYCONFIG.roomWhiteList.includes((await room?.topic()) || null)) {
+        return 1;
+    }//非房间内消息，且发送人备注在名单内
+    else if (message.room() == null && MYCONFIG.aliasWhiteList.includes(await message.talker().alias())) {
+        return 2;
+    } else {
+        return 0;
     }
 }
 
 /**
- * 回复的消息的逻辑
- * @param message 消息对象
+ * 发送后端处理消息，并返回发送微信
+ * @param {Message} message 消息对象
  */
-async function reMsg(message) {
-    //是否是房间消息 是：true；否： null
-    const room = message.room();
-    //是否@我
-    const mentionSelf = await message.mentionSelf();
-    // 群名称
-    const roomName = (await room?.topic()) || null;
-    // 备注名称
-    const remarkName = await message.talker().alias();
-    // 消息发送人
-    const talker = message.talker();
-
-    log.info(`\n 消息发送时间:${message.date()} \n 消息发送人:${talker} \n 消息类型:${message.type()} \n 消息是否@我:${mentionSelf} \n 消息内容:${message.text()} `)
+async function forwardMsg(message) {
+    log.info(`\n 消息发送时间:${message.date()} 
+    消息发送人:${message.talker()} 
+    消息类型:${message.type()} 
+    消息是否@我:${await message.mentionSelf()} 
+    消息内容:${message.text()} `)
 
     //1、简单返回消息
-    //房间内的消息需要@ 且群聊在名单内
-    // if (room != null && mentionSelf == true && MYCONFIG.roomWhiteList.includes(roomName)) {
-    //     room.say(`房间内消息自动回复 @by ${MYCONFIG.robotName}`, talker)
-    // }//非房间内消息，且发送人备注在名单内
-    // else if (room == null && MYCONFIG.aliasWhiteList.includes(remarkName)) {
-    //     talker.say(`私聊消息自动回复 @by ${MYCONFIG.robotName}`)
-    // }
+    // sendSay(message,"你好");
 
-    //2、这里通过接口进行返回，后端接口地址在config.js中，可以自行配置后端，可接入各类AI接口进行消息处理
+    //2、发送后端
     axios({
         url: MYCONFIG.msgPushUrl,
         method: 'post',
@@ -80,20 +98,33 @@ async function reMsg(message) {
                 //消息发送者ID 微信ID不是永久性
                 message.payload.talkerId,
                 //私聊才有listenerID
-                message.payload.listenerId == undefined ? null : message.payload.listenerId ,
+                message.payload.listenerId == undefined ? null : message.payload.listenerId,
                 //群聊才有房间ID
                 message.payload.roomId == undefined ? null : message.payload.roomId))
     }).then(result => {
         var reMsg = result.data.msg;
-        //房间内的消息需要@ 且群聊在名单内
-        if (room != null && mentionSelf == true && MYCONFIG.roomWhiteList.includes(roomName)) {
-            room.say(`${(reMsg)}\n @by ${MYCONFIG.robotName}`, talker)
-        }//非房间内消息，且发送人备注在名单内
-        else if (room == null && MYCONFIG.aliasWhiteList.includes(remarkName)) {
-            talker.say(`${(reMsg)}\n @by ${MYCONFIG.robotName}`)
-        }
+        sendSay(message, reMsg);
     }).catch(response => {
         log.error(`异常响应：${response}`);
+        sendSay(message, `异常响应:${response}`);
         return `异常响应：${responese}`;
     })
+}
+
+/**
+ * 发送回复逻辑
+ * 
+ *      区分群聊私聊
+ * @param {Message} message 消息内容
+ * @param {String} reStr 回复内容
+ */
+async function sendSay(message, reStr) {
+    const isROP = await isRoomOrPrivate(message);
+    //房间内消息
+    if (isROP == 1) {
+        message.room().say(`${(reStr)}\n @by ${MYCONFIG.robotName}`, message.talker())
+    } else if (isROP == 2) {
+        //私聊消息
+        message.talker().say(`${(reStr)}\n @by ${MYCONFIG.robotName}`)
+    }
 }
