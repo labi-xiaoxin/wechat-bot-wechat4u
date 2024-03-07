@@ -1,11 +1,3 @@
-<!--
- * @Descripttion: 
- * @version: 0.0.1
- * @Author: xiaoxin
- * @Date: 2024-02-27 18:48:36
- * @LastEditors: xiaoxin
- * @LastEditTime: 2024-02-28 11:02:16
--->
 <p align="center">
 	<strong>欢迎使用👏🏻wechat-bot-wechat4u</strong>
 </p>
@@ -27,6 +19,7 @@ wechat-bot-wechat4u，基于`wechat4u`进行开发，接收微信账号消息并
 - **群聊白名单**：支持指定名单内群聊回复
 - **私聊白名单**：支持指定名单内私聊回复
 - **支持手机同时在线**：基于网页版API开发，能够在手机登录微信时，同时使用机器人
+- **接入ChatGPT**：理论上4也能支持，图片暂不支持。
 
 ----------
 
@@ -42,9 +35,13 @@ wechat-bot-wechat4u，基于`wechat4u`进行开发，接收微信账号消息并
 - 安装依赖项:`npm install`
 - 自定义相关配置：
   - `config.js`:该文件配置机器人名称、群聊白名单、私聊白名单、（如有）后端接口
+  - `config-chatgpt.js`:该文件配置ChatGPT：接口请求地址、apikey、model
+  - `config-proxy.js`：国内环境下，需要使用代理才能请求ChatGPT。该文件配置相关代理：代理主机、代理端口、代理协议。如代理需要账号密码，自行调整。
   - `src/core/sendMessage.js`:该文件内`reMsg()`方法目前有2种回复方式：
-    - 简单返回消息：直接返回定义好的消息
-    - 接口返回消息：将消息封装好，通过Axios发送请求至后端，后端处理返回消息（如需要实现AI机器人等功能，可自行编写后端）
+    - 1、简单返回消息：直接返回定义好的消息
+    - 2、接口返回消息：将消息封装好，通过Axios发送请求至后端，后端处理返回消息（如需要实现AI机器人等功能，可自行编写后端）
+    - 3、请求ChatGPT：将消息通过Axios发送请求至OpenAI，处理完成后响应消息。
+- 测试项目：`npm run test`
 - 启动项目:`npm run dev`
 
 项目正常运行日志如下：

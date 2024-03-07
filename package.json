@@ -6,12 +6,13 @@
   "type": "module",
   "scripts": {
     "dev": "node ./index.js",
-    "test": "echo \"Error: 没有测试命令\" && exit 1"
+    "test": "node ./test.js"
   },
   "author": "labi-xiaoxin",
   "license": "Apache-2.0",
   "dependencies": {
     "axios": "^1.6.7",
+    "https-proxy-agent": "^7.0.4",
     "qrcode-terminal": "^0.12.0",
     "wechaty": "^1.20.2",
     "wechaty-puppet-wechat4u": "^1.14.14"

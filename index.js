@@ -10,7 +10,7 @@
 import { WechatyBuilder, ScanStatus, log } from "wechaty"
 import qrcodeTerminal from "qrcode-terminal"
 import { sendMessage } from './src/core/sendMessage.js'
-import { robotName } from "./config.js"
+import { robotName } from "./config/config.js"
 
 // 扫描二维码
 function onScan(qrCode,status){
